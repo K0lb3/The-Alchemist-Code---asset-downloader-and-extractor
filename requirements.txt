@@ -1,0 +1,4 @@
+pycryptodome
+UnityPy
+msgpack
+pillow
