@@ -39,7 +39,7 @@ class AssetDatabase:
             self.items[db_item.path] = db_item
 
         self.f.seek(db_item.line * line_length)
-        utf8_bytes = "{:08x}\t{}".format(db_item.hash, db_item.path).encode("utf8")
+        utf8_bytes = "{:08x}\t{}".format(item.Hash, item.Path).encode("utf8")
         self.f.write(
             b"".join([utf8_bytes, b" " * (line_length - len(utf8_bytes) - 1), b"\n"])
         )
