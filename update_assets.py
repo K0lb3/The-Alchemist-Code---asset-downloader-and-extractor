@@ -101,7 +101,7 @@ def update_version(version: Version) -> None:
         #     asset_data = req_asset(asset_url, f"{item.ID:08x}")
         #     extract_asset(extraction_path, asset_data, item)
         #     assetdb.update_database_entry(item)
-    assetdb.end_update_mode
+    assetdb.end_update_mode()
 
     print("~~ file fixes ~~")
     print("check that MasterParam,QuestParam, and QuestDropParam are json")

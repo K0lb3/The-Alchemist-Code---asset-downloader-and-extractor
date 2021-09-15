@@ -109,7 +109,7 @@ class AssetList:
                 # IDStr = item.ID.ToString("X8").ToLower(),
                 Size=readInt32(reader),
                 CompressedSize=readInt32(reader),
-                Path=readString(reader),
+                Path=readString(reader).strip(" "),
                 PathHash=readInt32(reader),
                 Hash=readUInt32(reader),
                 Flags=AssetBundleFlags(readUInt32(reader)),
