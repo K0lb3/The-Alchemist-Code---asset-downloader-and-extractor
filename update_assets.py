@@ -158,7 +158,7 @@ def check_param(data_path: str, name: str, digest: str) -> None:
             if dec_data[:1] == b"{" and dec_data[-1:] == b"}":
                 data = json.loads(dec_data)
             else:
-                data = msgpack.unpackb(dec_data)
+                data = msgpack.unpackb(dec_data, raw=False)
     else:
         with open(dfp, "rt", encoding="utf8") as f:
             data = json.load(f)
