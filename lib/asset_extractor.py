@@ -24,7 +24,7 @@ def extract_asset(dst: str, data: bytes, item:AssetListItem) -> None:
         
         
         if not AssetBundleFlags.StreamingAsset & item.Flags:
-            if (data[0] == b'{' and data[-1] == b'}') or (data[0] == b'[' and data[-1] == b']'):
+            if (data[:1] == b'{' and data[-1:] == b'}') or (data[:1] == b'[' and data[-1:] == b']'):
                 fp += ".json"
             else:
                 fp += ".txt"

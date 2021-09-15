@@ -155,7 +155,7 @@ def check_param(data_path: str, name: str, digest: str) -> None:
             dec_data = encryption_helper.decrypt(
                 enc_data, digest, encryption_helper.DecryptOptions.IsFile
             )
-            if dec_data[0] == "{" and dec_data[-1] == "}":
+            if dec_data[:1] == b"{" and dec_data[-1:] == b"}":
                 data = json.loads(dec_data)
             else:
                 data = msgpack.unpackb(dec_data)
@@ -174,7 +174,7 @@ def crop_conceptcards(extraction_path: str) -> None:
         try:
             img = Image.open(f)
         except:
-            print(f"Can't open{card} as image.")
+            print(f"Can't open {card} as image.")
             continue
         if (1024, 612) != img.size:
             print("cropping", card)
