@@ -1,18 +1,18 @@
 import json
 import os
+import re
 from multiprocessing import pool, cpu_count
 from typing import List, Tuple
 from PIL import Image
 import msgpack
 from lib.versions import VERSIONS, Version
-from lib.paths import ASSETS, RES
+from lib.paths import ASSETS, RES, ROOT
 from lib.version import load_version_consts, update_version_consts
 from lib.api import req_asset, req_chkver2
 from lib import encryption_helper
 from lib.assetlist import AssetList, AssetListItem
 from lib.assetdatabase import AssetDatabase
 from lib.asset_extractor import extract_asset
-
 
 def main():
     for version in VERSIONS:
@@ -77,7 +77,8 @@ def update_version(version: Version) -> None:
 
     # get new assets
     print("looking for new and changed assets")
-    new_assets, updated_assets = assetdb.check_assets(assetlist)
+    whitelist = read_whitelist()
+    new_assets, updated_assets = assetdb.check_assets(assetlist, whitelist)
     print("new assets:", len(new_assets))
     print("updated assets:", len(updated_assets))
     print()
@@ -180,6 +181,17 @@ def crop_conceptcards(extraction_path: str) -> None:
             print("cropping", card)
             img = img.crop((0, 0, 1024, 612))
             img.save(f)
+
+def read_whitelist():
+    whitelist = []
+    fp = os.path.join(ROOT, "whitelist.txt")
+    if os.path.exists(fp):
+        with open(fp, "rt", encoding="utf8") as f:
+            for line in f:
+                line = line.strip("\r\n")
+                if line:
+                    whitelist.append(re.compile(line))
+    return whitelist
 
 
 if __name__ == "__main__":

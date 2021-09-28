@@ -1,4 +1,5 @@
 import os
+import re
 from typing import Any, Dict, List
 from collections import namedtuple
 from .assetlist import AssetList, AssetListItem, AssetBundleFlags
@@ -74,17 +75,21 @@ class AssetDatabase:
         else:
             self.items = {}
 
-    def check_assets(self, assetlist: AssetList):
+    def check_assets(self, assetlist: AssetList, whitelist: List[re.Pattern]):
         new_items: List[AssetListItem] = []
         updated_items: List[AssetListItem] = []
 
         for list_item in assetlist.mItems:
             if AssetBundleFlags.IsCombined & list_item.Flags or not list_item.Path:
                 continue
+            if whitelist and not any(pattern.match(list_item.Path) for pattern in whitelist):
+                continue
             db_item = self.items.get(list_item.Path, None)
             if not db_item:
                 new_items.append(list_item)
             elif db_item.hash != list_item.Hash:
                 updated_items.append(list_item)
+                print(db_item.path, "{:08x}".format(db_item.hash), "{:08x}".format(list_item.Hash))
+                print(db_item.path, db_item.hash, list_item.Hash)
 
         return new_items, updated_items
