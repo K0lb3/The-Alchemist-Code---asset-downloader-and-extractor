@@ -59,7 +59,10 @@ def update_version_consts(version: Version) -> Tuple[str, bytes]:
 def get_new_version(package_id: str) -> Tuple[str, bytes]:
     # download & save latest apk from QooAp
     apk_data = download_QooApp_apk(package_id)
+    return extract_version(apk_data)
 
+
+def extract_version(apk_data: bytes) -> Tuple[str, bytes]:
     # extract the version
     apk_buf = io.BytesIO(apk_data)
     zip = zipfile.ZipFile(apk_buf)

@@ -153,9 +153,17 @@ def check_param(data_path: str, name: str, digest: str) -> None:
     if os.path.exists(sfp):
         with open(sfp, "rb") as f:
             enc_data = f.read()
-            dec_data = encryption_helper.decrypt(
-                enc_data, digest, encryption_helper.DecryptOptions.IsFile
-            )
+            if len(enc_data)%16 == 0:
+                try:
+                    dec_data = encryption_helper.decrypt(
+                        enc_data, digest, encryption_helper.DecryptOptions.IsFile
+                    )
+                except Exception as e:
+                    print(f"Failed to decrypt {name}", e)
+                    print(f"The file might not have been encrypted to begin with tho.")
+                dec_data = enc_data
+            else:
+                dec_data = enc_data
             if dec_data[:1] == b"{" and dec_data[-1:] == b"}":
                 data = json.loads(dec_data)
             else:
