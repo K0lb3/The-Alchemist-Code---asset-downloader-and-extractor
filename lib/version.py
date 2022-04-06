@@ -76,14 +76,14 @@ def extract_version(apk_data: bytes) -> Tuple[str, bytes]:
             env = UnityPy.load(zip_file)
             objs = env.objects
             for obj in objs:
-                if obj.type == "TextAsset":
+                if obj.type.name == "TextAsset":
                     data = obj.read()
                     if data.name == "networkver":
                         network_ver = data.text
                         break
 
             for obj in objs:
-                if obj.type == "MonoBehaviour":
+                if obj.type.name == "MonoBehaviour":
                     data = obj.read()
                     if data.name == "ScriptableTexture2D":
                         data.read_typetree(ScriptableTexture2D)
