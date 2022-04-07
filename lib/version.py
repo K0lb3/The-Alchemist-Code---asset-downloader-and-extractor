@@ -58,7 +58,8 @@ def update_version_consts(version: Version) -> Tuple[str, bytes]:
 
 def get_new_version(package_id: str) -> Tuple[str, bytes]:
     # download & save latest apk from QooAp
-    apk_data = download_QooApp_apk(package_id)
+    #apk_data = download_QooApp_apk(package_id)
+    apk_data = download_apksupport(package_id)
     return extract_version(apk_data)
 
 
@@ -110,3 +111,10 @@ def extract_version(apk_data: bytes) -> Tuple[str, bytes]:
     apk_buf.close()
 
     return network_ver, bytes(shared_key)
+
+def download_apksupport(appid: str) -> bytes:
+    from urllib.request import Request, urlopen
+    import re
+    data = urlopen(Request(url=f"https://apk.support/download-app/{appid}", headers = {"user-agent":"Firefox"})).read()
+    apk_url = re.search(r'href="(https://fastp.+?)">', data.decode("utf-8")).group(1)
+    return urlopen(apk_url).read()
