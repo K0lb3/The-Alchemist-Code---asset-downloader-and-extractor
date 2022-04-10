@@ -70,6 +70,17 @@ def extract_version(apk_data: bytes) -> Tuple[str, bytes]:
 
     network_ver = None
     shared_key = None
+    # check if xapk
+    for x in zip.namelist():
+        if x.endswith(".apk") and not x.startswith("config."):
+            with zip.open(x) as f:
+                network_ver, shared_key = extract_version(f.read())
+            break
+    if network_ver and shared_key:
+        zip.close()
+        apk_buf.close()
+        return network_ver, shared_key
+    
 
     for f in zip.namelist():
         if f[:16] == "assets/bin/Data/":
