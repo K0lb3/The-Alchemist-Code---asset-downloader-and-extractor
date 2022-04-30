@@ -126,6 +126,12 @@ def extract_version(apk_data: bytes) -> Tuple[str, bytes]:
 def download_apksupport(appid: str) -> bytes:
     from urllib.request import Request, urlopen
     import re
-    data = urlopen(Request(url=f"https://apk.support/download-app/{appid}", headers = {"user-agent":"Firefox"})).read()
-    apk_url = re.search(r'href="(https://fastp.+?)">', data.decode("utf-8")).group(1)
+    req = Request(
+        url = "https://apk.support/gapi/index.php",
+        data = f"x=downapk&google_id={appid}&language=en-US&hl=en&android_ver=0&tbi=0".encode("utf8"),
+        headers = {"content-type": "application/x-www-form-urlencoded","user-agent":"user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:99.0) Gecko/20100101 Firefox/99.0"},
+        method="POST"
+    )
+    html = urlopen(req).read().decode("utf8")
+    apk_url = re.search(f'<a href="(.*?)">.+?>{appid}.apk</span>.*?</a>', html).group(1)
     return urlopen(apk_url).read()
