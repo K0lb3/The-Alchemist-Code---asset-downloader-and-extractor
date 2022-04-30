@@ -161,7 +161,7 @@ def check_param(data_path: str, name: str, digest: str) -> None:
                 except Exception as e:
                     print(f"Failed to decrypt {name}", e)
                     print(f"The file might not have been encrypted to begin with tho.")
-                dec_data = enc_data
+                    dec_data = enc_data
             else:
                 dec_data = enc_data
             if dec_data[:1] == b"{" and dec_data[-1:] == b"}":
