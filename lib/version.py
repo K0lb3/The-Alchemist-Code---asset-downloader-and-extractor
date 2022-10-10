@@ -8,6 +8,8 @@ from .paths import RES
 from typing import Tuple
 import os
 
+import requests
+
 # TypeTree of the ScriptableTexture2D MonoBehaviour that refers to the Texture2D
 # that contains the shared key encoded into the texture via LSB
 ScriptableTexture2D = [
@@ -58,7 +60,7 @@ def update_version_consts(version: Version) -> Tuple[str, bytes]:
 
 def get_new_version(package_id: str) -> Tuple[str, bytes]:
     # download & save latest apk from QooAp
-    #apk_data = download_QooApp_apk(package_id)
+    # apk_data = download_QooApp_apk(package_id)
     apk_data = download_apksupport(package_id)
     return extract_version(apk_data)
 
@@ -80,7 +82,6 @@ def extract_version(apk_data: bytes) -> Tuple[str, bytes]:
         zip.close()
         apk_buf.close()
         return network_ver, shared_key
-    
 
     for f in zip.namelist():
         if f[:16] == "assets/bin/Data/":
@@ -123,15 +124,42 @@ def extract_version(apk_data: bytes) -> Tuple[str, bytes]:
 
     return network_ver, bytes(shared_key)
 
+
 def download_apksupport(appid: str) -> bytes:
     from urllib.request import Request, urlopen
+    from urllib.parse import quote
     import re
-    req = Request(
-        url = "https://apk.support/gapi/index.php",
-        data = f"x=downapk&google_id={appid}&language=en-US&hl=en&android_ver=0&tbi=0".encode("utf8"),
-        headers = {"content-type": "application/x-www-form-urlencoded","user-agent":"user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:99.0) Gecko/20100101 Firefox/99.0"},
-        method="POST"
+
+    html = requests.post(
+        url=f"https://apk.support/download-app/{appid}",
+        data=f"cmd=apk&pkg={appid}&arch=default&tbi=default&device_id=&model=default&language=en&dpi=480&av=default".encode(
+            "utf8"
+        ),
+        headers={
+            "sec-ch-ua": '"Chromium";v="106", "Google Chrome";v="106", "Not;A=Brand";v="99"',
+            "sec-ch-ua-platform": "Windows",
+            "sec-ch-ua-mobile": "?0",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36",
+            "accept": "*/*",
+            "origin": "https://apk.support",
+            "sec-fetch-site": "same-origin",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-dest": "empty",
+            f"referer": "https://apk.support/download-app/{appid}",
+            "accept-encoding": "gzip, deflate, br",
+            "accept-language": "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7",
+            "pragma": "no-cache",
+            "cache-control": "no-cache",
+            "content-length": "112",
+            "content-type": "application/x-www-form-urlencoded",
+        },
+    ).text
+    apks = re.findall(
+        r"""<a rel="nofollow" href="(.+?.apk)">\s+?<span class.+?</span>(.+?.apk)</span>""",
+        html,
     )
-    html = urlopen(req).read().decode("utf8")
-    apk_url = re.search(f'<a href="(.*?)">.+?>{appid}.apk</span>.*?</a>', html).group(1)
-    return urlopen(apk_url).read()
+    for apk_url, apk_name in apks:
+        if "config" not in apk_name:
+            return requests.get(apk_url).content
+    else:
+        raise Exception("couldn't find base apk found")
