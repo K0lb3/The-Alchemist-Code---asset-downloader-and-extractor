@@ -2,3 +2,4 @@ pycryptodome
 UnityPy
 msgpack
 pillow
+requests
