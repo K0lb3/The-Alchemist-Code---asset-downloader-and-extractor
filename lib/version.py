@@ -83,41 +83,33 @@ def extract_version(apk_data: bytes) -> Tuple[str, bytes]:
         apk_buf.close()
         return network_ver, shared_key
 
+    env = UnityPy.Environment()
     for f in zip.namelist():
-        if f[:16] == "assets/bin/Data/":
-            zip_file = zip.open(f)
-            env = UnityPy.load(zip_file)
-            objs = env.objects
-            for obj in objs:
-                if obj.type.name == "TextAsset":
-                    data = obj.read()
-                    if data.name == "networkver":
-                        network_ver = data.text
-                        break
+        env.load_file(zip.open(f), env, os.path.basename(f))
 
-            for obj in objs:
-                if obj.type.name == "MonoBehaviour":
-                    data = obj.read()
-                    if data.name == "ScriptableTexture2D":
-                        data.read_typetree(ScriptableTexture2D)
-                        if data.texture:  # JP
-                            texture = data.texture.read().image
-                        else:  # Global
-                            ext_name = data.assets_file.externals[
-                                data.texture.file_id - 1
-                            ].name
-                            with zip.open(f"assets/bin/Data/{ext_name}") as zip_file2:
-                                env2 = UnityPy.load(zip_file2)
-                                texture = (
-                                    env2.files["0"]
-                                    .objects[data.texture.path_id]
-                                    .read()
-                                    .image
-                                )
-                        shared_key = get_shared_key(texture)
-                        break
+    for obj in env.objects:
+        if obj.type.name == "TextAsset":
+            data = obj.read()
+            if data.name == "networkver":
+                network_ver = data.text
+                break
 
-            zip_file.close()
+    for obj in env.objects:
+        if obj.type.name == "MonoBehaviour":
+            data = obj.read()
+            if data.name == "ScriptableTexture2D":
+                data.read_typetree(ScriptableTexture2D)
+                if data.texture:  # JP
+                    texture = data.texture.read().image
+                else:  # Global
+                    ext_name = data.assets_file.externals[data.texture.file_id - 1].name
+                    with zip.open(f"assets/bin/Data/{ext_name}") as zip_file2:
+                        env2 = UnityPy.load(zip_file2)
+                        texture = (
+                            env2.files["0"].objects[data.texture.path_id].read().image
+                        )
+                shared_key = get_shared_key(texture)
+                break
 
     zip.close()
     apk_buf.close()
